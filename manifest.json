@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Leftdays",
+  "version": "1.0.0",
+  "description": "Days left in this year",
+  "action": {
+    "default_title": "Leftdays",
+    "default_popup": "popup.html"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": ["storage"]
+}
