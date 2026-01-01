@@ -38,9 +38,9 @@ body {
   padding: 6px 0 6px;
 }
 
-.headline .h1 { font-size: 22px; margin: 4px 0 10px; font-weight: 800; }
+.headline .h1 { font-size: 24px; margin: 6px 0 14px; font-weight: 800; }
 .headline .h1 .num-red { font-size: inherit; }
-.headline .h2 { font-size: 16px; margin: 6px 0 6px; font-weight: 600; }
+.headline .h2 { font-size: 18px; margin: 10px 0 8px; font-weight: 600; }
 .headline .h3 { font-size: 14px; margin: 0 0 10px; font-weight: 500; opacity: 0.9; }
 .headline .num-red { color: #d32f2f; font-weight: 700; }
 
@@ -131,6 +131,28 @@ body {
 .day.today { background: var(--today-color); }
 .day.empty { background: var(--empty-color); opacity: 0.35; }
 .day.sunday { background: #81c784; }
+
+/* Responsive layout */
+@media (max-width: 1200px) {
+  .year-grid { grid-template-columns: repeat(4, max-content); gap: 16px 24px; }
+  .headline .h1 { font-size: 23px; }
+}
+@media (max-width: 900px) {
+  .year-grid { grid-template-columns: repeat(3, max-content); gap: 14px 20px; }
+  :root { --cell-size: 12px; --cell-gap: 3px; }
+  .headline .h1 { font-size: 22px; }
+}
+@media (max-width: 640px) {
+  .year-grid { grid-template-columns: repeat(2, max-content); gap: 12px 16px; }
+  :root { --cell-size: 11px; --cell-gap: 3px; }
+  .headline .h1 { font-size: 21px; }
+}
+@media (max-width: 420px) {
+  .year-grid { grid-template-columns: 1fr; gap: 12px 12px; }
+  :root { --cell-size: 10px; --cell-gap: 2px; }
+  body { padding: 8px; }
+  .headline { margin: 8px 0 16px; }
+}
 
 /* Tooltip for date hover */
 .ld-tooltip {
