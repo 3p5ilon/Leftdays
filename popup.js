@@ -70,6 +70,11 @@
         } else {
           cell.classList.add('future');
         }
+        // Ensure past days override Sunday color by re-adding 'past' last if needed
+        if (cmp < 0 && date.getDay() === 0) {
+          cell.classList.remove('sunday');
+          cell.classList.add('past');
+        }
         // Store a locale-aware date string for the tooltip (uses user's local timezone)
         cell.dataset.dateStr = date.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
         daysEl.appendChild(cell);
