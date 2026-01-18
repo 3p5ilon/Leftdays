@@ -3,11 +3,8 @@
   const headlineEl = document.getElementById('headline');
   const nameForm = document.getElementById('nameForm');
   const nameInput = document.getElementById('nameInput');
-  const now = new Date();
 
-  function monthNames() {
-    return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  }
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   function storageGet(key) {
     return new Promise((resolve) => {
@@ -31,140 +28,157 @@
   }
 
   function render() {
-    const year = new Date().getFullYear();
-    yearGridEl.innerHTML = '';
+    yearGridEl.innerHTML = ''; 
 
-    const today = new Date(); today.setHours(0,0,0,0);
-    const names = monthNames();
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const year = now.getFullYear();
 
-    for (let m = 0; m < 12; m++) {
-      const block = document.createElement('div');
-      block.className = 'month-block';
+    const yearStart = new Date(year, 0, 1);
+    const startDayIndex = yearStart.getDay(); 
+    
+    for (let i = 0; i < startDayIndex; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'day void';
+        yearGridEl.appendChild(empty);
+    }
 
-      const nameEl = document.createElement('div');
-      nameEl.className = 'month-name';
-      nameEl.textContent = names[m];
-      block.appendChild(nameEl);
+    const yearEnd = new Date(year, 11, 31);
+    let totalCells = startDayIndex;
 
-      const daysEl = document.createElement('div');
-      daysEl.className = 'month-days';
-
-      const first = new Date(year, m, 1);
-      const last = new Date(year, m + 1, 0);
-      const totalDays = last.getDate();
-
-      // Only actual month days, no placeholders
-      for (let d = 1; d <= totalDays; d++) {
-        const date = new Date(year, m, d);
+    for (let d = new Date(yearStart); d <= yearEnd; d.setDate(d.getDate() + 1)) {
         const cell = document.createElement('div');
         cell.className = 'day';
+        
+        const currentMs = d.getTime();
+        const todayMs = today.getTime();
+        const dayOfWeek = d.getDay();
 
-        const cmp = date.getTime() - today.getTime();
-        if (cmp === 0) {
+        if (currentMs === todayMs) {
           cell.classList.add('today');
-        } else if (date.getDay() === 0) {
-          // Sundays (except today) get a distinct color
-          cell.classList.add('sunday');
-        } else if (cmp < 0) {
+        } else if (dayOfWeek === 0) {
+          cell.classList.add('sunday'); 
+        } else if (currentMs < todayMs) {
           cell.classList.add('past');
         } else {
           cell.classList.add('future');
         }
-        // Ensure past days override Sunday color by re-adding 'past' last if needed
-        if (cmp < 0 && date.getDay() === 0) {
-          cell.classList.remove('sunday');
-          cell.classList.add('past');
-        }
-        // Store a locale-aware date string for the tooltip (uses user's local timezone)
-        cell.dataset.dateStr = date.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-        daysEl.appendChild(cell);
-      }
 
-      block.appendChild(daysEl);
-      yearGridEl.appendChild(block);
+        if (currentMs < todayMs && dayOfWeek === 0) {
+           cell.classList.remove('sunday');
+           cell.classList.add('past');
+        }
+
+        const dateStr = d.toLocaleDateString(undefined, { 
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
+        });
+        cell.dataset.dateStr = dateStr;
+        
+        yearGridEl.appendChild(cell);
+        totalCells++;
     }
 
-    // Headline: name + remaining days (year, month) + percent remaining
-    if (headlineEl) {
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const yearEnd = new Date(year, 11, 31); yearEnd.setHours(0,0,0,0);
-      const yearStart = new Date(year, 0, 1); yearStart.setHours(0,0,0,0);
-      const remainingYear = Math.max(0, Math.floor((yearEnd - today) / msPerDay) + 1);
-      const totalYearDays = Math.floor((yearEnd - yearStart) / msPerDay) + 1;
-      const pctRemain = ((remainingYear / totalYearDays) * 100).toFixed(1);
+    const TARGET_CELLS = 53 * 7;
+    while (totalCells < TARGET_CELLS) {
+        const empty = document.createElement('div');
+        empty.className = 'day void';
+        yearGridEl.appendChild(empty);
+        totalCells++;
+    }
 
+    if (headlineEl) {
+      const msPerDay = 86400000;
+      const totalYearDays = Math.floor((yearEnd - yearStart) / msPerDay) + 1;
+      const remainingYear = Math.max(0, Math.floor((yearEnd - today) / msPerDay) + 1);
+      const daysPassed = totalYearDays - remainingYear;
+      const pctPassed = Math.floor((daysPassed / totalYearDays) * 100);
+      
       const m = today.getMonth();
-      const monthEnd = new Date(year, m + 1, 0); monthEnd.setHours(0,0,0,0);
+      const monthEnd = new Date(year, m + 1, 0); 
+      monthEnd.setHours(0,0,0,0);
       const remainingMonth = Math.max(0, Math.floor((monthEnd - today) / msPerDay) + 1);
 
+      const timeStr = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+      
       storageGet('userName').then((userName) => {
         if (!userName) {
-          // Show name input once if not set
           if (nameForm) nameForm.style.display = 'flex';
           if (nameInput) nameInput.focus();
-          userName = '';
         } else if (nameForm) {
           nameForm.style.display = 'none';
         }
-        const firstLine = userName
-          ? `${userName}, only <span class="num-red">${remainingYear}</span> days remain`
-          : `Only <span class="num-red">${remainingYear}</span> days remain`;
-        const secondLine = `Only <span class="num-red">${remainingMonth}</span> days left in ${names[m]}`;
 
+        const nameDisplay = userName ? `${userName}` : '';
+        
         headlineEl.innerHTML = `
-          <div class="h1">${firstLine}</div>
-          <div class="h2">${secondLine}</div>
+          <div class="h1">${nameDisplay} &bull; <span class="num-red">${remainingYear}</span> days left &bull; <span class="num-red">${pctPassed}%</span></div>
+          <div class="h2"><span class="num-red">${remainingMonth}</span> days left in ${MONTHS[m]} &bull; <span class="num-red">${timeStr}</span></div>
         `;
       });
     }
   }
 
-  function scheduleMidnightRefresh() {
-    // Re-render at the next midnight
+  function startClock() {
     const now = new Date();
-    const next = new Date(now);
-    next.setDate(now.getDate() + 1);
-    next.setHours(0, 0, 0, 0);
-    const ms = next.getTime() - now.getTime();
+    const msToNextMinute = ((60 - now.getSeconds()) * 1000) - now.getMilliseconds();
+    
     setTimeout(() => {
       render();
-      scheduleMidnightRefresh();
-    }, ms + 50);
+      setInterval(render, 60000);
+    }, msToNextMinute);
   }
 
-  // Initial render
   render();
-  scheduleMidnightRefresh();
+  startClock();
 
-  // Handle name form submit
   if (nameForm) {
     nameForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const v = (nameInput && nameInput.value || '').trim();
-      if (v) await storageSet('userName', v);
-      render();
+      const val = (nameInput && nameInput.value || '').trim();
+      if (val) {
+        await storageSet('userName', val);
+        render();
+      }
     });
   }
 
-  // Custom tooltip (shows after 1s on hover)
   let tooltipEl = null;
   let hoverTimer = null;
   let currentTarget = null;
+  const TOOLTIP_DELAY = 1000;
 
-  function ensureTooltip() {
+  document.addEventListener('mousemove', (e) => {
+    if (!e.target || !e.target.classList) return;
+    
+    const cell = e.target.closest('.day');
+    const isValidDay = cell && cell.dataset.dateStr && !cell.classList.contains('void');
+
+    if (isValidDay) {
+       if (currentTarget !== cell) {
+         currentTarget = cell;
+         clearTimeout(hoverTimer);
+         hideTooltip();
+         hoverTimer = setTimeout(() => {
+           showTooltip(cell.dataset.dateStr, e.clientX, e.clientY);
+         }, TOOLTIP_DELAY);
+       } else if (tooltipEl && tooltipEl.classList.contains('show')) {
+         updateTooltipPos(e.clientX, e.clientY);
+       }
+    } else {
+       currentTarget = null;
+       clearTimeout(hoverTimer);
+       hideTooltip();
+    }
+  });
+
+  function showTooltip(text, x, y) {
     if (!tooltipEl) {
       tooltipEl = document.createElement('div');
       tooltipEl.className = 'ld-tooltip';
       document.body.appendChild(tooltipEl);
     }
-  }
-
-  function showTooltip(text, x, y) {
-    ensureTooltip();
     tooltipEl.textContent = text;
-    const offset = 12;
-    tooltipEl.style.left = `${x + offset}px`;
-    tooltipEl.style.top = `${y + offset}px`;
+    updateTooltipPos(x, y);
     tooltipEl.classList.add('show');
   }
 
@@ -172,29 +186,11 @@
     if (tooltipEl) tooltipEl.classList.remove('show');
   }
 
-  // Event delegation on the whole document for newly rendered cells
-  document.addEventListener('mousemove', (e) => {
-    if (!e.target || !(e.target instanceof Element)) return;
-    const el = e.target.closest('.day');
-    if (el && el.dataset && el.dataset.dateStr && !el.classList.contains('empty')) {
-      if (currentTarget !== el) {
-        // New target, restart timer
-        currentTarget = el;
-        clearTimeout(hoverTimer);
-        hideTooltip();
-        hoverTimer = setTimeout(() => {
-          showTooltip(el.dataset.dateStr, e.clientX, e.clientY);
-        }, 1000);
-      } else if (tooltipEl && tooltipEl.classList.contains('show')) {
-        // Update position while shown
-        tooltipEl.style.left = `${e.clientX + 12}px`;
-        tooltipEl.style.top = `${e.clientY + 12}px`;
-      }
-    } else {
-      // Left the cell
-      currentTarget = null;
-      clearTimeout(hoverTimer);
-      hideTooltip();
+  function updateTooltipPos(x, y) {
+    if (tooltipEl) {
+      tooltipEl.style.left = (x + 12) + 'px';
+      tooltipEl.style.top = (y + 12) + 'px';
     }
-  });
+  }
+
 })();

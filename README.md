@@ -1,15 +1,8 @@
 # Leftdays
 
-Leftdays is a simple Chrome extension that displays the number of days remaining in the current year and month.
+Leftdays is a simple Chrome extension that displays the number of days remaining in the current year + notetaking.
 
 No tracking. No notifications. No distractions.
-
-## Features
-
-- Days left in the current year
-- Days left in the current month
-- Simple grid view
-- Dark mode (system)
 
 ## Installation (Local)
 
@@ -18,14 +11,6 @@ No tracking. No notifications. No distractions.
 3. Enable Developer mode
 4. Click Load unpacked
 5. Select the extension folder
-
-## Usage
-
-Open the extension (or new tab, if enabled) to see how many days are left.
-
-## Privacy
-
-Leftdays does not collect or store any user data.
 
 ## License
 

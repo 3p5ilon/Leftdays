@@ -7,15 +7,22 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <header class="header">
-      <div class="title">Days left in this year</div>
-    </header>
+    <div class="container">
+      <header class="header">
+        <div class="title">Days left in this year</div>
+      </header>
 
-    <main>
-      <div id="headline" class="headline"></div>
-      <div id="yearGrid" class="year-grid" aria-label="Year grid (6x2 months)"></div>
-    </main>
+      <main>
+        <div id="headline" class="headline"></div>
+        <div id="yearGrid" class="year-grid" aria-label="Year grid"></div>
+        <div class="notes-section">
+          <div id="notesReadView" class="notes-read-view" tabindex="0" title="Press 'i' to edit"></div>
+          <textarea id="notesEditView" class="notes-editor" style="display:none" spellcheck="false" placeholder="Type here... (- item, -- sub-item)"></textarea>
+        </div>
+      </main>
+    </div>
 
     <script src="popup.js"></script>
+    <script src="notes.js"></script>
   </body>
 </html>

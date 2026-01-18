@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="popup.css" />
     <style>
       /* Full-tab sizing */
-      :root { --cell-size: 12px; --cell-gap: 3px; }
       body { min-width: unset; }
       .page { max-width: 1400px; margin: 40px auto; padding: 0 24px; }
       .header { margin-bottom: 16px; display: block; text-align: center; }
@@ -17,16 +16,30 @@
     </style>
   </head>
   <body>
-    <div class="page">
+    <div class="container newtab-layout">
       <main>
         <div id="headline" class="headline"></div>
         <form id="nameForm" class="name-form" style="display:none" autocomplete="off">
           <input id="nameInput" type="text" placeholder="Enter your name" />
           <button type="submit">Save</button>
         </form>
-        <div id="yearGrid" class="year-grid" aria-label="Year grid (6x2 months)"></div>
+        <div id="yearGrid" class="year-grid" aria-label="Year grid"></div>
+        <div id="dailyMaxim" class="daily-maxim"></div>
+        <div class="notes-section">
+          <div id="notesReadView" class="notes-read-view" tabindex="0" title="Press 'i' to edit"></div>
+          <textarea id="notesEditView" class="notes-editor" style="display:none" spellcheck="false" placeholder="# heading h1
+- item
+-- sub-item
+-x strikethrough
+--x strikethrough sub-item
+[text](url)
+
+Cmd + Enter to save"></textarea>
+        </div>
       </main>
     </div>
     <script src="popup.js"></script>
+    <script src="maxims.js"></script>
+    <script src="notes.js"></script>
   </body>
 </html>
